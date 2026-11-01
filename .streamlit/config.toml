@@ -1,0 +1,13 @@
+# RN-11: o tema padrão do Streamlit usa vermelho nos controles. Cor primária verde.
+[theme]
+base = "light"
+primaryColor = "#1F4E3D"
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#F1F4F2"
+textColor = "#1F2A37"
+
+[browser]
+gatherUsageStats = false
+
+[client]
+toolbarMode = "viewer"

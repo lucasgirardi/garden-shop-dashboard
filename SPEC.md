@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Autor** | Lucas Girardi |
-| **Versão** | 1.1 |
+| **Versão** | 1.2 |
 | **Implementa** | [PRD.md](PRD.md) v1.0 (os IDs `RF`, `RN` e `CA` se referem ao PRD) |
 | **Status** | Referência viva: qualquer mudança de comportamento atualiza esta SPEC no mesmo PR |
 
@@ -22,7 +22,7 @@ data/raw/*.csv ──► loader.py ──► metrics.py ──► app.py (Stream
 | `garden_dashboard/metrics.py` | Implementar RN-01 a RN-09: vendas efetivas, visão por produto, status, prioridade, filtros, indicadores e tabelas agregadas | Não lê arquivos. Não usa Streamlit |
 | `garden_dashboard/formatting.py` | Formatar moeda e números no padrão brasileiro | Não calcula nada |
 | `app.py` | Interface: filtros, cartões, gráficos, tabelas, mensagens de dados vazios e de erro | Não contém fórmulas. Tudo vem de `metrics.py` |
-| `tests/` | Testes de `loader`, `metrics` e `formatting`, com o recorte manual e a base completa | — |
+| `tests/` | Testes de `loader`, `metrics`, `formatting` e da interface (`AppTest` do Streamlit), com o recorte manual e a base completa | — |
 
 Toda regra de cálculo fica em funções puras de `metrics.py` (entrada: DataFrames e parâmetros; saída: DataFrame ou número). Assim ela pode ser testada sem a interface.
 
@@ -205,6 +205,8 @@ Teste dedicado: ver T-08 na seção 8. Um join ingênuo `products ⨝ order_item
 | Bloco inferior | Gráfico de vendas por produto · gráfico de reposição por categoria · quadro de fornecedores | RF-12 a RF-14 |
 | Expansível | Tabela de todos os produtos filtrados | RF-15 |
 
+**Pasta de dados:** `data/raw/` por padrão. A variável de ambiente `GARDEN_DATA_DIR` aponta outra pasta. É usada no teste T-13 para simular arquivo ausente (RF-20) sem tocar nos dados originais.
+
 **Mensagens** (sempre `st.info`/`st.warning`, nunca `st.error`, por causa de RN-11)
 
 | Situação | Mensagem |
@@ -214,7 +216,9 @@ Teste dedicado: ver T-08 na seção 8. Um join ingênuo `products ⨝ order_item
 | Nenhum `needs_reorder` | "Nenhum produto precisa de reposição nos filtros selecionados." |
 | `DataError` | "Não foi possível carregar os dados: <mensagem>" |
 
-**Cores** (RN-11, sem vermelho): Zerado `#3B3B3B` · Crítico `#D9822B` · Abaixo do nível `#E8B931` · Atenção `#7A9CC6` · OK `#4F9A6B` · Descontinuado `#A8A8A8` · Sem nível definido `#B9A6D6`. O tema do Streamlit (`.streamlit/config.toml`) usa a cor primária `#1F4E3D`, porque o padrão do Streamlit é vermelho.
+**Cores** (RN-11, sem vermelho): Zerado `#3B3B3B` · Crítico `#D9822B` · Abaixo do nível `#E8B931` · Atenção `#7A9CC6` · OK `#4F9A6B` · Descontinuado `#A8A8A8` · Sem nível definido `#B9A6D6`. O tema do Streamlit (`.streamlit/config.toml`) usa a cor primária `#1F4E3D`, porque o padrão do Streamlit é vermelho (tags do multiselect, toggle, seleção de datas). O menu "Deploy" é ocultado (`toolbarMode = "viewer"`).
+
+**Gráficos:** eixos de produto e categoria com `labelOverlap=False` e altura por barra (`alt.Step`), para não esconder rótulos. A primeira versão ocultava metade dos nomes, problema descoberto ao conferir o app.
 
 **Números:** `formatting.brl_usd(4731) → "US$ 4.731,00"` (valores em dólar, conforme o dicionário, com separadores brasileiros) e `formatting.brl_int(1234) → "1.234"`.
 
@@ -298,6 +302,7 @@ São os mesmos números dos critérios CA-01 a CA-10 do PRD, verificados por `te
 | T-10 | `test_metrics.py` | Pedidos em aberto respeitam período e produtos visíveis | RF-05 |
 | T-11 | `test_base_completa.py` | Período padrão e critérios CA-01 a CA-10 na base real | RF-07, CA-01 a CA-10 |
 | T-12 | `test_formatting.py` | `US$ 4.731,00`, `US$ 0,00`, `US$ 448,50`, `1.234` | — |
+| T-13 | `test_app.py` | Interface: cartões da tela inicial, incluir descontinuados, categoria Tools, fornecedor sem produtos, julho sem vendas, pasta sem arquivos → aviso sem números e nenhum `st.error` | CA-01, CA-04 a CA-07, CA-11, RF-20, RN-11 |
 
 ## 9. Histórico de versões
 
@@ -305,3 +310,4 @@ São os mesmos números dos critérios CA-01 a CA-10 do PRD, verificados por `te
 |---|---|
 | 1.0 | Primeira versão, escrita antes do código, a partir do PRD v1.0 |
 | 1.1 | Incluídas `default_period` (§2.3) e `brl_int` (§6), que surgiram ao escrever os testes T-11 e T-12. O período padrão deixa de ser calculado na interface e passa a ser uma função testável |
+| 1.2 | Incluídos T-13 (testes da interface com `AppTest`), a variável `GARDEN_DATA_DIR`, o ajuste dos rótulos dos gráficos e a ocultação do menu Deploy |
