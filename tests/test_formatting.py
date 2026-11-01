@@ -1,4 +1,4 @@
-"""T-12: formatação de moeda."""
+"""TEST-012: formatação de moeda."""
 from garden_dashboard.formatting import brl_usd, brl_int
 
 

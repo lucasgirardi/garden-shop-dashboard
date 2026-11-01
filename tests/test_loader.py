@@ -1,4 +1,4 @@
-"""T-01 a T-03: carga e validação dos CSVs (SPEC §3)."""
+"""TEST-001 a TEST-003: carga e validação dos CSVs (SPEC REQ-001 e §7.2)."""
 import hashlib
 import shutil
 
@@ -22,7 +22,7 @@ def _edita(path, linha_antiga, linha_nova):
     path.write_text(texto.replace(linha_antiga, linha_nova))
 
 
-# T-01 ---------------------------------------------------------------------
+# TEST-001 ---------------------------------------------------------------------
 def test_carrega_recorte_com_tipos_corretos(recorte_dir):
     d = load_data(recorte_dir)
     assert set(d) == {"products", "categories", "suppliers", "orders", "order_items"}
@@ -52,7 +52,7 @@ def test_status_e_discontinued_normalizados(recorte_dir, tmp_path):
     assert dados["products"]["discontinued"].sum() == 1
 
 
-# T-02 ---------------------------------------------------------------------
+# TEST-002 ---------------------------------------------------------------------
 def test_arquivo_ausente(recorte_dir, tmp_path):
     d = _copia(recorte_dir, tmp_path)
     (d / "products.csv").unlink()
@@ -124,7 +124,7 @@ def test_quantidade_zero(recorte_dir, tmp_path):
         load_data(d)
 
 
-# T-03 ---------------------------------------------------------------------
+# TEST-003 ---------------------------------------------------------------------
 def test_arquivos_originais_nao_sao_alterados(raw_dir):
     def hashes():
         return {f.name: hashlib.md5(f.read_bytes()).hexdigest() for f in sorted(raw_dir.iterdir())}

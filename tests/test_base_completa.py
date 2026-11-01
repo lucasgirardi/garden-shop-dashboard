@@ -1,4 +1,4 @@
-"""T-11: critérios de aceitação do PRD (CA-01 a CA-10) com a base completa."""
+"""TEST-011: critérios de aceitação do PRD (CA-001 a CA-010) com a base completa."""
 from datetime import date
 
 import pytest

@@ -1,7 +1,7 @@
-"""Carga e validação dos CSVs da Garden Shop (SPEC §3).
+"""Carga e validação dos CSVs da Garden Shop (SPEC REQ-001 e §7.2).
 
-Os arquivos são apenas lidos (RN-10). Qualquer problema gera DataError com
-mensagem no formato "<arquivo>: <problema>" (RF-20).
+Os arquivos são apenas lidos (RN-010). Qualquer problema gera DataError com
+mensagem no formato "<arquivo>: <problema>" (RF-020).
 """
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ import pandas as pd
 
 VALID_STATUS = {"shipped", "pending", "processing", "cancelled"}
 
-# Tabelas e campos necessários (SPEC §2.1). customers.csv não é carregado.
+# Tabelas e campos necessários (SPEC §7.1). customers.csv não é carregado.
 SCHEMA: dict[str, dict] = {
     "products": {
         "file": "products.csv",

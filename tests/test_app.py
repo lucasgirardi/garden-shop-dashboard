@@ -1,4 +1,4 @@
-"""T-13: interface Streamlit (CA-01, CA-04, CA-06, CA-07, RF-20) via AppTest."""
+"""TEST-013: interface Streamlit (CA-001, CA-004, CA-006, CA-007, RF-020) via AppTest."""
 from datetime import date
 from pathlib import Path
 
@@ -25,7 +25,7 @@ def test_ca01_tela_inicial():
     assert _metricas(at) == {"Produtos a repor": "5", "Produtos zerados": "1",
                             "Valor do estoque (custo)": "US$ 4.731,00", "Unidades vendidas": "86",
                             "Pedidos em aberto": "6"}
-    assert not at.error  # RN-11: nenhum st.error (vermelho)
+    assert not at.error  # RN-011: nenhum st.error (vermelho)
 
 
 def test_ca04_incluir_descontinuados():

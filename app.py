@@ -15,10 +15,10 @@ from garden_dashboard import metrics as m
 from garden_dashboard.formatting import brl_int, brl_usd
 from garden_dashboard.loader import DataError, load_data
 
-# GARDEN_DATA_DIR permite apontar outra pasta (usado nos testes de erro, RF-20)
+# GARDEN_DATA_DIR permite apontar outra pasta (usado nos testes de erro, RF-020)
 DATA_DIR = Path(os.environ.get("GARDEN_DATA_DIR", Path(__file__).parent / "data" / "raw"))
 
-# RN-11: paleta sem vermelho (SPEC §6)
+# RN-011: paleta sem vermelho (SPEC REQ-009)
 STATUS_COLORS = {
     m.ZERADO: "#3B3B3B", m.CRITICO: "#D9822B", m.ABAIXO: "#E8B931", m.ATENCAO: "#7A9CC6",
     m.OK: "#4F9A6B", m.DESCONTINUADO: "#A8A8A8", m.SEM_NIVEL: "#B9A6D6",
@@ -37,7 +37,7 @@ def carregar(path: str):
     return load_data(Path(path))
 
 
-# ---------------------------------------------------------------- dados (RF-20)
+# ---------------------------------------------------------------- dados (RF-020)
 try:
     dados = carregar(str(DATA_DIR))
 except DataError as e:
@@ -46,7 +46,7 @@ except DataError as e:
 
 inicio_padrao, fim_padrao = m.default_period(dados["orders"])
 
-# ---------------------------------------------------------------- filtros (RF-07 a RF-10)
+# ---------------------------------------------------------------- filtros (RF-007 a RF-010)
 st.sidebar.header("Filtros")
 periodo = st.sidebar.date_input(
     "Período de vendas", value=(inicio_padrao, fim_padrao),
@@ -62,7 +62,7 @@ todos_fornecedores = sorted(dados["suppliers"]["supplier_name"])
 categorias = st.sidebar.multiselect("Categoria", todas_categorias, default=todas_categorias)
 fornecedores = st.sidebar.multiselect("Fornecedor", todos_fornecedores, default=todos_fornecedores)
 incluir_desc = st.sidebar.toggle("Incluir descontinuados", value=False,
-                                 help="Descontinuados nunca são recomendados para reposição (RN-04).")
+                                 help="Descontinuados nunca são recomendados para reposição (RN-004).")
 
 # ---------------------------------------------------------------- cálculo
 visao = m.build_product_view(dados, inicio, fim)
@@ -70,28 +70,28 @@ filtrada = m.apply_filters(visao, categorias, fornecedores, incluir_desc)
 abertos = m.open_orders_count(dados["orders"], dados["order_items"], inicio, fim, filtrada["product_id"])
 k = m.compute_kpis(filtrada, abertos)
 
-# ---------------------------------------------------------------- cabeçalho (RF-16)
+# ---------------------------------------------------------------- cabeçalho (RF-016)
 st.title("🌿 Garden Shop · Estoque e Reposição")
 st.caption(
     f"Autor: Lucas Girardi · Estoque: **posição atual** (`quantity_on_hand`) · "
     f"Vendas: **{inicio:%d/%m/%Y} a {fim:%d/%m/%Y}**, pedidos cancelados excluídos · "
     f"Descontinuados: **{'visíveis (não repor)' if incluir_desc else 'ocultos'}**")
 
-# ---------------------------------------------------------------- indicadores (RF-01 a RF-06)
+# ---------------------------------------------------------------- indicadores (RF-001 a RF-006)
 c = st.columns(5)
 c[0].metric("Produtos a repor", brl_int(k["products_to_reorder"]),
-            help="Produtos ativos com estoque ≤ nível de reposição (RN-03).")
+            help="Produtos ativos com estoque ≤ nível de reposição (RN-003).")
 c[0].caption("Posição atual")
 c[1].metric("Produtos zerados", brl_int(k["zero_stock"]), help="Produtos ativos com estoque = 0.")
 c[1].caption("Posição atual")
 c[2].metric("Valor do estoque (custo)", brl_usd(k["stock_value"]), help="Σ estoque × custo.")
 c[2].caption("Posição atual")
-c[3].metric("Unidades vendidas", brl_int(k["units_sold"]), help="Pedidos shipped, pending e processing (RN-01).")
+c[3].metric("Unidades vendidas", brl_int(k["units_sold"]), help="Pedidos shipped, pending e processing (RN-001).")
 c[3].caption("Período selecionado")
-c[4].metric("Pedidos em aberto", brl_int(k["open_orders"]), help="Pedidos pending + processing (RN-02).")
+c[4].metric("Pedidos em aberto", brl_int(k["open_orders"]), help="Pedidos pending + processing (RN-002).")
 c[4].caption("Período selecionado")
 
-if filtrada.empty:  # RF-17
+if filtrada.empty:  # RF-017
     st.info(MSG_SEM_PRODUTOS)
     st.stop()
 
@@ -101,11 +101,11 @@ def _colorir_status(col: pd.Series):
             for v in col]
 
 
-# ---------------------------------------------------------------- lista de prioridades (RF-11)
+# ---------------------------------------------------------------- lista de prioridades (RF-011)
 st.subheader("Lista de prioridades de reposição")
 prioridades = m.priority_table(filtrada)
 if not filtrada["needs_reorder"].any():
-    st.info(MSG_SEM_REPOSICAO)  # RF-19
+    st.info(MSG_SEM_REPOSICAO)  # RF-019
 if not prioridades.empty:
     tabela = prioridades.rename(columns={
         "priority": "Prioridade", "product_name": "Produto", "category_name": "Categoria",
@@ -115,12 +115,12 @@ if not prioridades.empty:
     st.caption("P1 Urgente = zerado ou crítico (≤ 50% do nível) · P2/P3 = abaixo do nível, com vendas acima/abaixo "
                "da mediana · Monitorar = até 125% do nível · Déficit = mínimo para voltar ao nível de reposição.")
 
-# ---------------------------------------------------------------- visualizações (RF-12 a RF-14)
+# ---------------------------------------------------------------- visualizações (RF-012 a RF-014)
 esq, dir_ = st.columns([1.1, 1])
 with esq:
     st.subheader("Unidades vendidas por produto")
     vendas = m.sales_chart_data(filtrada)
-    if vendas["units_sold"].sum() == 0:  # RF-18
+    if vendas["units_sold"].sum() == 0:  # RF-018
         st.info(MSG_SEM_VENDAS)
     else:
         grafico = alt.Chart(vendas).mark_bar().encode(
@@ -167,7 +167,7 @@ with dir_:
                      column_config={"Produtos a repor": st.column_config.NumberColumn(width="small"),
                                     "Déficit (un.)": st.column_config.NumberColumn(width="small")})
 
-# ---------------------------------------------------------------- detalhe (RF-15)
+# ---------------------------------------------------------------- detalhe (RF-015)
 with st.expander(f"Todos os produtos filtrados ({len(filtrada)})"):
     detalhe = filtrada[["product_name", "category_name", "supplier_name", "quantity_on_hand", "reorder_level",
                         "cost", "stock_value", "units_sold", "status", "priority"]].sort_values("product_name")
