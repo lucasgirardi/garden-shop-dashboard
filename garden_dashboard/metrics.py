@@ -18,7 +18,6 @@ DESCONTINUADO, SEM_NIVEL = "Descontinuado", "Sem nível definido"
 P1, P2, P3, MONITORAR, NAO_REPOR, SEM_PRIORIDADE = (
     "P1 Urgente", "P2 Alta", "P3 Média", "Monitorar", "Não repor", "—")
 PRIORITY_ORDER = {P1: 1, P2: 2, P3: 3, MONITORAR: 4, NAO_REPOR: 5, SEM_PRIORIDADE: 6}
-STATUS_ORDER = [ZERADO, CRITICO, ABAIXO, ATENCAO, OK, DESCONTINUADO, SEM_NIVEL]
 MISSING_EMAIL = "não cadastrado"
 
 

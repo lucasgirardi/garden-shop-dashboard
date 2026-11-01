@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Autor** | Lucas Girardi |
-| **Versão** | 1.0 |
+| **Versão** | 1.1 (alinhada ao dashboard implementado) |
 | **Documentos relacionados** | [SPEC.md](SPEC.md) (como cada requisito é implementado) · [AGENTS.md](AGENTS.md) (como trabalhar no repositório) |
 | **Origem** | Proposta da Aula 1 (Lista 01), com escopo revisado nesta entrega (ver seção 9) |
 
@@ -41,7 +41,7 @@ Os dados existem (produtos, pedidos, itens, fornecedores), mas estão em arquivo
 
 **Dentro do escopo**
 - Dashboard web local (Streamlit) que lê os CSVs originais da Aula 1 sem alterá-los.
-- 5 indicadores, 4 filtros, 3 visualizações principais e 1 tabela de detalhe (seção 5).
+- 5 indicadores, 4 filtros, 2 gráficos, 2 tabelas de apoio à decisão e 1 tabela de detalhe (seção 5).
 - Regras de vendas efetivas, reposição, descontinuados e prioridade (seção 6).
 - Testes automatizados das regras de cálculo.
 
@@ -132,7 +132,7 @@ Todos os critérios consideram os filtros padrão, salvo indicação contrária.
 | CA-09 | Produto em vários pedidos (Fiddle-Leaf Fig, 4 pedidos) | Valor do estoque do produto = **US$ 252,00** (14 × 18), contado uma vez só | RN-08 |
 | CA-10 | Ironwood Tools no quadro de fornecedores | E-mail aparece como "não cadastrado" | RF-14 |
 | CA-11 | Arquivo `products.csv` ausente ou com coluna faltando | Mensagem clara com o nome do arquivo e sem números parciais | RF-20 |
-| CA-12 | Rodar `pytest` | Todos os testes passam | RN-01 a RN-09 |
+| CA-12 | Rodar `pytest` | Todos os testes passam. CA-01 a CA-10 são verificados na base real (`test_base_completa.py`) e CA-01, CA-04 a CA-07 e CA-11 também pela interface (`test_app.py`) | RN-01 a RN-11 |
 
 ## 8. Premissas e limitações
 
@@ -159,3 +159,4 @@ Todos os critérios consideram os filtros padrão, salvo indicação contrária.
 | Versão | Mudança |
 |---|---|
 | 1.0 | Primeira versão validada antes da implementação |
+| 1.1 | Revisão final: contagem de elementos visuais corrigida (2 gráficos e 2 tabelas, e não "3 visualizações") e CA-12 passa a indicar onde cada critério é testado. Nenhuma regra mudou |
