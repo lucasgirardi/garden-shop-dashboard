@@ -25,10 +25,13 @@ pip install -r requirements.txt
 
 | Ação | Comando | Verificado? |
 |---|---|---|
-| Rodar todos os testes | `pytest` | ⚠️ ainda não verificado |
-| Rodar um arquivo de teste | `pytest tests/test_metrics.py -v` | ⚠️ ainda não verificado |
-| Abrir o dashboard | `streamlit run app.py` (abre em http://localhost:8501) | ⚠️ ainda não verificado |
-| Criar o ambiente virtual no Windows | `.venv\Scripts\activate` | ⚠️ ainda não verificado |
+| Instalar dependências | `pip install -r requirements.txt` | ✅ verificado em 01/11/2026 (Linux, Python 3.13) |
+| Rodar todos os testes | `pytest` (66 testes) | ✅ verificado em 01/11/2026 |
+| Rodar um arquivo de teste | `pytest tests/test_metrics.py -v` | ✅ verificado em 01/11/2026 |
+| Abrir o dashboard | `streamlit run app.py` (abre em http://localhost:8501) | ✅ verificado em 01/11/2026 |
+| Abrir com outra pasta de dados | `GARDEN_DATA_DIR=/caminho streamlit run app.py` | ✅ verificado em 01/11/2026 (via teste T-13) |
+| Ativar o ambiente virtual no Windows | `.venv\Scripts\activate` | ⚠️ ainda não verificado (sem máquina Windows no teste) |
+| Criar o ambiente virtual | `python -m venv .venv` | ⚠️ ainda não verificado (dependências instaladas direto no ambiente de teste) |
 
 > Quando um comando for executado com sucesso, troque "⚠️ ainda não verificado" por "✅ verificado em <data>" no mesmo PR.
 
@@ -46,6 +49,7 @@ tests/
   test_metrics.py              # T-04 a T-10
   test_base_completa.py        # T-11 (critérios de aceitação do PRD)
   test_formatting.py           # T-12
+  test_app.py                  # T-13 (interface, via streamlit.testing AppTest)
 data/raw/                      # Dados originais da Aula 1. SOMENTE LEITURA
 .streamlit/config.toml         # Tema (cor primária verde, sem vermelho)
 ```
@@ -70,7 +74,7 @@ Regras de organização:
 
 1. Crie uma branch por mudança pequena: `docs/...`, `test/...`, `feat/...`, `fix/...`.
 2. **Para regras de cálculo, escreva o teste antes da implementação**, com o resultado esperado da SPEC §7. Faça um commit do teste (falhando) e depois um commit da implementação.
-3. Rode `pytest` e abra o app para conferir visualmente antes de abrir o PR.
+3. Rode `pytest` e abra o app para conferir visualmente antes de abrir o PR. Os testes de `test_app.py` cobrem a interface, mas não substituem olhar a tela (rótulos cortados, por exemplo, só aparecem visualmente).
 4. Abra um PR com: o que mudou, quais `RF`/`RN`/`CA` são afetados, como foi testado e um print, se a interface mudou.
 5. Integre com merge (sem squash), para preservar o histórico de testes antes do código.
 
