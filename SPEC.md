@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Autor** | Lucas Girardi |
-| **Versão** | 1.0 |
+| **Versão** | 1.1 |
 | **Implementa** | [PRD.md](PRD.md) v1.0 (os IDs `RF`, `RN` e `CA` se referem ao PRD) |
 | **Status** | Referência viva: qualquer mudança de comportamento atualiza esta SPEC no mesmo PR |
 
@@ -55,7 +55,7 @@ A ligação `products` ↔ `order_items` é **1:N**. Um join direto repetiria `q
 
 | Parâmetro | Tipo | Padrão | Requisito |
 |---|---|---|---|
-| `start`, `end` | `date` | menor e maior `order_date` da base | RF-07 |
+| `start`, `end` | `date` | `default_period(orders)` = menor e maior `order_date` da base (15/01/2024 a 14/06/2024) | RF-07 |
 | `categories` | lista de nomes | todas | RF-08 |
 | `suppliers` | lista de nomes | todos | RF-09 |
 | `include_discontinued` | `bool` | `False` | RF-10 |
@@ -216,7 +216,7 @@ Teste dedicado: ver T-08 na seção 8. Um join ingênuo `products ⨝ order_item
 
 **Cores** (RN-11, sem vermelho): Zerado `#3B3B3B` · Crítico `#D9822B` · Abaixo do nível `#E8B931` · Atenção `#7A9CC6` · OK `#4F9A6B` · Descontinuado `#A8A8A8` · Sem nível definido `#B9A6D6`. O tema do Streamlit (`.streamlit/config.toml`) usa a cor primária `#1F4E3D`, porque o padrão do Streamlit é vermelho.
 
-**Moeda:** `formatting.brl_usd(4731) → "US$ 4.731,00"` (valores em dólar, conforme o dicionário, com separadores brasileiros).
+**Números:** `formatting.brl_usd(4731) → "US$ 4.731,00"` (valores em dólar, conforme o dicionário, com separadores brasileiros) e `formatting.brl_int(1234) → "1.234"`.
 
 ## 7. Exemplos com resultado esperado
 
@@ -296,11 +296,12 @@ São os mesmos números dos critérios CA-01 a CA-10 do PRD, verificados por `te
 | T-08 | `test_metrics.py` | Uma linha por produto; o valor do produto com vários pedidos não duplica | RN-08 |
 | T-09 | `test_metrics.py` | Filtros sem resultado → indicadores 0 e tabelas vazias sem exceção; período sem vendas → unidades 0 e estoque inalterado | RF-17 a RF-19, RN-07 |
 | T-10 | `test_metrics.py` | Pedidos em aberto respeitam período e produtos visíveis | RF-05 |
-| T-11 | `test_base_completa.py` | Critérios CA-01 a CA-10 na base real | CA-01 a CA-10 |
-| T-12 | `test_formatting.py` | `US$ 4.731,00`, `US$ 0,00`, `US$ 448,50` | — |
+| T-11 | `test_base_completa.py` | Período padrão e critérios CA-01 a CA-10 na base real | RF-07, CA-01 a CA-10 |
+| T-12 | `test_formatting.py` | `US$ 4.731,00`, `US$ 0,00`, `US$ 448,50`, `1.234` | — |
 
 ## 9. Histórico de versões
 
 | Versão | Mudança |
 |---|---|
 | 1.0 | Primeira versão, escrita antes do código, a partir do PRD v1.0 |
+| 1.1 | Incluídas `default_period` (§2.3) e `brl_int` (§6), que surgiram ao escrever os testes T-11 e T-12. O período padrão deixa de ser calculado na interface e passa a ser uma função testável |
