@@ -1,4 +1,4 @@
-"""Regras de negócio do dashboard (SPEC §4 e §5).
+"""Regras de negócio do dashboard (SPEC REQ-002 a REQ-008).
 
 Funções puras: recebem DataFrames/parâmetros e devolvem DataFrames/números.
 Nada aqui lê arquivos nem usa Streamlit.
@@ -10,8 +10,8 @@ from typing import Iterable
 
 import pandas as pd
 
-EFFECTIVE_STATUS = ("shipped", "pending", "processing")  # RN-01, RN-02
-OPEN_STATUS = ("pending", "processing")                  # RN-02
+EFFECTIVE_STATUS = ("shipped", "pending", "processing")  # RN-001, RN-002
+OPEN_STATUS = ("pending", "processing")                  # RN-002
 
 ZERADO, CRITICO, ABAIXO, ATENCAO, OK = "Zerado", "Crítico", "Abaixo do nível", "Atenção", "OK"
 DESCONTINUADO, SEM_NIVEL = "Descontinuado", "Sem nível definido"
@@ -22,7 +22,7 @@ MISSING_EMAIL = "não cadastrado"
 
 
 def default_period(orders: pd.DataFrame) -> tuple[date, date]:
-    """Período padrão = primeira e última data de pedido da base (RF-07)."""
+    """Período padrão = primeira e última data de pedido da base (RF-007)."""
     return orders["order_date"].min().date(), orders["order_date"].max().date()
 
 
@@ -32,7 +32,7 @@ def _in_period(orders: pd.DataFrame, start: date, end: date) -> pd.Series:
 
 
 def sales_by_product(orders: pd.DataFrame, order_items: pd.DataFrame, start: date, end: date) -> pd.DataFrame:
-    """RN-01/RN-02/RN-07: unidades em vendas efetivas no período, uma linha por produto."""
+    """RN-001/RN-002/RN-007: unidades em vendas efetivas no período, uma linha por produto."""
     valid = orders.loc[orders["status"].isin(EFFECTIVE_STATUS) & _in_period(orders, start, end), "order_id"]
     items = order_items[order_items["order_id"].isin(valid)]
     return (items.groupby("product_id", as_index=False)["quantity"].sum()
@@ -41,14 +41,14 @@ def sales_by_product(orders: pd.DataFrame, order_items: pd.DataFrame, start: dat
 
 def open_orders_count(orders: pd.DataFrame, order_items: pd.DataFrame, start: date, end: date,
                       product_ids: Iterable[int]) -> int:
-    """RF-05: pedidos pending/processing distintos no período com ao menos um produto visível."""
+    """RF-005: pedidos pending/processing distintos no período com ao menos um produto visível."""
     open_ids = orders.loc[orders["status"].isin(OPEN_STATUS) & _in_period(orders, start, end), "order_id"]
     items = order_items[order_items["order_id"].isin(open_ids) & order_items["product_id"].isin(list(product_ids))]
     return int(items["order_id"].nunique())
 
 
 def _status(row) -> str:
-    """RN-05 (SPEC §4.4): vale a primeira condição verdadeira."""
+    """RN-005 (SPEC REQ-004): vale a primeira condição verdadeira."""
     if row.discontinued:
         return DESCONTINUADO
     if row.reorder_level == 0:
@@ -65,7 +65,7 @@ def _status(row) -> str:
 
 
 def _priority(status: str, units_sold: float, median: float) -> str:
-    """RN-06 (SPEC §4.5)."""
+    """RN-006 (SPEC REQ-005)."""
     if status in (ZERADO, CRITICO):
         return P1
     if status == ABAIXO:
@@ -78,16 +78,16 @@ def _priority(status: str, units_sold: float, median: float) -> str:
 
 
 def build_product_view(data: dict[str, pd.DataFrame], start: date, end: date) -> pd.DataFrame:
-    """RN-03 a RN-09: uma linha por produto, com estoque atual e vendas do período."""
+    """RN-003 a RN-009: uma linha por produto, com estoque atual e vendas do período."""
     products = data["products"]
-    sales = sales_by_product(data["orders"], data["order_items"], start, end)  # agregado ANTES do join (RN-08)
+    sales = sales_by_product(data["orders"], data["order_items"], start, end)  # agregado ANTES do join (RN-008)
 
     view = (products
             .merge(data["categories"], on="category_id", how="left", validate="many_to_one")
             .merge(data["suppliers"][["supplier_id", "supplier_name", "contact_email"]],
                    on="supplier_id", how="left", validate="many_to_one")
             .merge(sales, on="product_id", how="left", validate="one_to_one"))
-    if len(view) != len(products) or not view["product_id"].is_unique:  # SPEC §5, item 3
+    if len(view) != len(products) or not view["product_id"].is_unique:  # RN-008
         raise RuntimeError("Duplicação detectada na visão por produto")
 
     view["units_sold"] = view["units_sold"].fillna(0).astype(int)
@@ -106,7 +106,7 @@ def build_product_view(data: dict[str, pd.DataFrame], start: date, end: date) ->
 
 def apply_filters(view: pd.DataFrame, categories: list[str], suppliers: list[str],
                   include_discontinued: bool) -> pd.DataFrame:
-    """RF-08 a RF-10. O período não é aplicado aqui (RN-07)."""
+    """RF-008 a RF-010. O período não é aplicado aqui (RN-007)."""
     mask = view["category_name"].isin(categories) & view["supplier_name"].isin(suppliers)
     if not include_discontinued:
         mask &= ~view["discontinued"]
@@ -114,7 +114,7 @@ def apply_filters(view: pd.DataFrame, categories: list[str], suppliers: list[str
 
 
 def compute_kpis(filtered: pd.DataFrame, open_orders: int) -> dict:
-    """RF-01 a RF-05 sobre a visão filtrada. Vazio -> zeros (RF-17)."""
+    """RF-001 a RF-005 sobre a visão filtrada. Vazio -> zeros (RF-017)."""
     return {
         "products_to_reorder": int(filtered["needs_reorder"].sum()) if not filtered.empty else 0,
         "zero_stock": int((filtered["status"] == ZERADO).sum()) if not filtered.empty else 0,
@@ -129,7 +129,7 @@ PRIORITY_COLUMNS = ["priority", "product_name", "category_name", "supplier_name"
 
 
 def priority_table(view: pd.DataFrame) -> pd.DataFrame:
-    """RF-11: itens com alguma prioridade, do mais ao menos urgente."""
+    """RF-011: itens com alguma prioridade, do mais ao menos urgente."""
     t = view[view["priority"] != SEM_PRIORIDADE].copy()
     t["_ord"] = t["priority"].map(PRIORITY_ORDER)
     t = t.sort_values(["_ord", "pct_level", "product_name"], na_position="last")
@@ -137,13 +137,13 @@ def priority_table(view: pd.DataFrame) -> pd.DataFrame:
 
 
 def sales_chart_data(view: pd.DataFrame) -> pd.DataFrame:
-    """RF-12: todos os produtos filtrados (inclusive sem vendas), por vendas decrescentes."""
+    """RF-012: todos os produtos filtrados (inclusive sem vendas), por vendas decrescentes."""
     return (view.sort_values(["units_sold", "product_name"], ascending=[False, True])
             [["product_name", "units_sold", "status"]].reset_index(drop=True))
 
 
 def reorder_by_category(view: pd.DataFrame) -> pd.DataFrame:
-    """RF-13: produtos e produtos a repor por categoria."""
+    """RF-013: produtos e produtos a repor por categoria."""
     if view.empty:
         return pd.DataFrame(columns=["category_name", "products", "to_reorder"])
     return (view.groupby("category_name", as_index=False)
@@ -154,7 +154,7 @@ def reorder_by_category(view: pd.DataFrame) -> pd.DataFrame:
 
 
 def supplier_summary(view: pd.DataFrame) -> pd.DataFrame:
-    """RF-14: fornecedores dos produtos a repor, com contato."""
+    """RF-014: fornecedores dos produtos a repor, com contato."""
     r = view[view["needs_reorder"]] if not view.empty else view
     if r.empty:
         return pd.DataFrame(columns=["supplier_name", "products", "deficit_total", "contact_email"])

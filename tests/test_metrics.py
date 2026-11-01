@@ -1,4 +1,4 @@
-"""T-04 a T-10: regras de negócio (SPEC §4, §5 e exemplos da §7.1)."""
+"""TEST-004 a TEST-010: regras de negócio (SPEC REQ-002 a REQ-008 e exemplos da §13.1)."""
 from datetime import date
 
 import pandas as pd
@@ -28,7 +28,7 @@ def _todos(v):
     return m.apply_filters(v, v.category_name.unique().tolist(), v.supplier_name.unique().tolist(), False)
 
 
-# T-04 vendas efetivas ------------------------------------------------------
+# TEST-004 vendas efetivas ------------------------------------------------------
 def test_unidades_vendidas_por_produto_recorte(view):
     vendas = dict(zip(view.product_name, view.units_sold))
     assert vendas == {"Fiddle-Leaf Fig": 4, "Pruning Shears": 1, "Hand Cultivator": 2,
@@ -55,7 +55,7 @@ def test_periodo_filtra_vendas_com_datas_inclusivas(dados):
     assert m.compute_kpis(_todos(v), 0)["units_sold"] == 4
 
 
-# T-05 valor do estoque ----------------------------------------------------
+# TEST-005 valor do estoque ----------------------------------------------------
 def test_valor_do_estoque_recorte(view):
     assert m.compute_kpis(_todos(view), 0)["stock_value"] == pytest.approx(460.50)
 
@@ -65,7 +65,7 @@ def test_valor_do_estoque_com_descontinuados(view):
     assert m.compute_kpis(f, 0)["stock_value"] == pytest.approx(492.50)
 
 
-# T-06 status e prioridade -------------------------------------------------
+# TEST-006 status e prioridade -------------------------------------------------
 def _dados_sinteticos(produtos):
     """produtos: lista de (id, qoh, nivel, descontinuado, unidades_vendidas)."""
     products = pd.DataFrame(
@@ -126,7 +126,7 @@ def test_deficit(view):
         "Fiddle-Leaf Fig": 0, "Pruning Shears": 0, "Hand Cultivator": 7, "Hanging Basket": 10, "Bird Feeder": 0}
 
 
-# T-07 descontinuados ------------------------------------------------------
+# TEST-007 descontinuados ------------------------------------------------------
 def test_descontinuado_nunca_e_reposto(view):
     bird = _linha(view, "Bird Feeder")
     assert bird["quantity_on_hand"] <= bird["reorder_level"]  # estaria abaixo do nível…
@@ -150,7 +150,7 @@ def test_descontinuado_aparece_como_nao_repor_na_lista(view):
     assert t.iloc[-1]["product_name"] == "Bird Feeder" and t.iloc[-1]["priority"] == "Não repor"
 
 
-# T-08 duplicação ----------------------------------------------------------
+# TEST-008 duplicação ----------------------------------------------------------
 def test_uma_linha_por_produto(dados, view):
     assert len(view) == len(dados["products"])
     assert view.product_id.is_unique
@@ -163,7 +163,7 @@ def test_valor_nao_duplica_com_varios_pedidos(dados, view):
     assert _linha(view, "Fiddle-Leaf Fig")["stock_value"] == 252
 
 
-# T-09 dados vazios --------------------------------------------------------
+# TEST-009 dados vazios --------------------------------------------------------
 def test_filtro_sem_resultado(view):
     vazio = m.apply_filters(view, ["Inexistente"], view.supplier_name.unique().tolist(), True)
     assert vazio.empty
@@ -193,7 +193,7 @@ def test_produto_sem_vendas_aparece_no_grafico(view):
     assert g.iloc[0]["product_name"] == "Fiddle-Leaf Fig"  # ordenado por vendas
 
 
-# T-10 pedidos em aberto ---------------------------------------------------
+# TEST-010 pedidos em aberto ---------------------------------------------------
 def test_pedidos_em_aberto(dados):
     o, i = dados["orders"], dados["order_items"]
     assert m.open_orders_count(o, i, INICIO, FIM, [1, 9, 11, 14]) == 1        # pedido 7
